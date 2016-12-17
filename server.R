@@ -6,12 +6,14 @@ function(input, output, session) {
   
   output$plotos <-
     renderPlot({
-
+      
         df<-as.data.frame(rbind(
         original=test[which(test$metric==input$metric&test$partition==input$partition),63:92],
         prediction=predictions[which(test$metric==input$metric&test$partition==input$partition),],
         date=names(test)[63:92]
       ))
+        
+
 
       dft<-as.data.frame(t(df))
       dft$original<-as.numeric(as.character(dft$original))

@@ -68,12 +68,12 @@ original_rows<-nrow(test)
 test<-cbind(test,str_split_fixed(as.character(test$partition),"\\|", length(factor_names)))
 names(test)[(ncol(test)-length(factor_names)+1):ncol(test)]<-factor_names
 #Find all possible aggregations and bind them to test:
-for(i in 1:length(factor_names)){ 
+
     for(j in 1:(length(factor_names)-1)){
       combinations<-combn(factor_names, j, simplify = FALSE)
     for(metric in unique(test$metric)){
       for(comb in combinations){
-        #test_add<-NULL
+      
                  test_add<-cbind(test[1:original_rows,3:92][test[1:original_rows,]$metric==metric,],
                                  test[1:original_rows,93:ncol(test)][test[1:original_rows,]$metric==metric,
                                                                      which(names(test[,93:ncol(test)]) %in% comb)])
@@ -95,25 +95,14 @@ for(i in 1:length(factor_names)){
                  }  
             } 
           }
-} 
+
 test_factors<-which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )
 test_factors_names<-names(test[,which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )])
-#test[,test_factors]<-lapply(test[,test_factors],as.character())
 for (t in test_factors){test[,t]<-as.character(test[,t])}
 test$metric<-as.factor(test$metric)
 test[,test_factors][is.na(test[,test_factors])] <- ''
 test$partition<-apply(test[,test_factors],1,paste,collapse='|')
-#test[,test_factors]<-as.factor(test[,test_factors])
 for (t in test_factors){test[,t]<-as.factor(test[,t])}
-
-?bind_rows
-
-str(test_add)
-as.list(comb)
-list('location')
-
-
-
 
 
 
@@ -132,7 +121,9 @@ for(k in 1:nrow(test)){ tryCatch({
   predictions[k,1:29]<-forecast_version_a[1:29]
   predictions[k,30]<-pointwise_prediction
   meta_frame[k,3:9]<-vector_update
-  print(k)
+  print(paste(k/nrow(test),'%',sep=''))
+  print(paste('ETA:'))
+  print((1-k/nrow(test))*(Sys.time()-a)/(k/nrow(test)))
 },
 error=function(cond) {
   message(cond)
@@ -141,7 +132,7 @@ error=function(cond) {
 })
 }
 print(Sys.time()-a)
-
+#back<-meta_frame
 
 meta_frame$metric<-as.factor(meta_frame$metric)
 meta_frame$model_mean_error<-round(as.numeric(meta_frame$model_mean_error),3)
@@ -155,6 +146,10 @@ meta_frame$metric_partition<-paste(meta_frame$metric,meta_frame$partition,sep="-
 meta_frame$predicted_value<-round(meta_frame$predicted_value,3)
 meta_frame$prediction_abs_error<-round(meta_frame$prediction_abs_error,3)
 meta_frame$real_value<-round(meta_frame$real_value,3)
-meta_frame$metric_num<-as.numeric(meta_frame$metric)
+meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.25)
 meta_frame$prediction_accuracy<-1-meta_frame$prediction_perc_error_abs
+
+
+
+
 
