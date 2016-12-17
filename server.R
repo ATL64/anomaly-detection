@@ -66,21 +66,40 @@ function(input, output, session) {
   
 
 
-  observeEvent(input$all, {
-    if (is.null(input$check2)) {
-      updateCheckboxGroupInput(
-        session = session, inputId = "check2", selected = paste(1:26, ") Choice ", LETTERS)
-      )
-    } else {
-      updateCheckboxGroupInput(
-        session = session, inputId = "check2", selected = ""
-      )
-    }
+  # observeEvent(input$all, {
+  #   if (is.null(input$check2)) {
+  #     updateCheckboxGroupInput(
+  #       session = session, inputId = "check2", selected = paste(1:26, ") Choice ", LETTERS)
+  #     )
+  #   } else {
+  #     updateCheckboxGroupInput(
+  #       session = session, inputId = "check2", selected = ""
+  #     )
+  #   }
+  # })
+
+  # updateCheckboxGroupInput(
+  #   session = session, inputId = "check2", selected = ""
+  # )
+
+  output$input_ui <- renderUI({
+    lapply(test_factors_names, function(part) {
+      # numericInput(paste0("n_input_", i), label = paste0("n_input", i), value = 0)
+    # eval(  parse( text = paste( "
+
+                        dropdownButton(label = as.character(part), status = "default", width = 80,br(),
+  
+                      checkboxGroupInput(inputId = as.character(part), label = "Choose", 
+                                         choices = unique(test[, which(names(test) == as.character(part))]))
+                        # )",sep=''
+    #   ))
+     )
+    })
+    
+    # lapply(1:num, function(i) {
+      # numericInput(paste0("n_input_", i), label = paste0("n_input", i), value = 0)
+    # })
   })
-
-
-
-
 
 
 ###############################################################################################################
