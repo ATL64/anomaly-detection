@@ -43,7 +43,7 @@ meta_frame<-data.frame(partition=character(),
 
 db_data<-read.csv('music_processed.csv')
 
-#CODE HERE FOR REMOVING LOW VOLUME PARTITIONS
+
 #MANUALLY ADD CONVERSION RATE COLUMNS HERE
 
 db_factors<-which(lapply(db_data,class) %in% ('factor') & sapply(db_data, function(x) all(is.na(as.Date(as.character(x),format="%Y-%m-%d")))))

@@ -18,7 +18,8 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
            ############# GLOBAL ANALYSIS PANEL ###########
            tabPanel("Global Analysis",
 
-                    
+                    sidebarLayout(
+                     mainPanel(
                     googleChartsInit(),
                     
                     # Use the Google webfont "Source Sans Pro"
@@ -52,7 +53,7 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                                         ),
                                         # The default padding is a little too spaced out
                                         chartArea = list(
-                                          top = 50, left = 75,
+                                          top = 50, left = 75, right=100,
                                           height = "75%", width = "75%"
                                         ),
                                         # Allow pan/zoom
@@ -75,18 +76,51 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                                           )
                                         )
                                       )
+                    )
                     ),
-                    fluidRow(
-                      shiny::column(4, offset = 4,
-                                    sliderInput("prediction_error", "Prediction Error",
-                                                min = 0, max = 3,
-                                                value = 0, animate = FALSE)
+                    # fluidRow(
+                    #   shiny::column(4, offset = 4,
+                    #                 sliderInput("prediction_error", "Prediction Error",
+                    #                             min = 0, max = 3,
+                    #                             value = 0, animate = FALSE)
+                    #   )
+                    # ),
+                    # sidebarPanel(
+                    #   
+                    wellPanel(
+                      tags$style(type="text/css", '#rightPanel { width:200px; float:left;}'),
+                      id = "rightPanel",
+                      
+                      selectInput("aa", label = h5("Metric"), 
+                                  choices =as.list(unique(test$metric))
+                                  , 
+                                  
+                                  selected = 1),
+                      sliderInput("prediction_error", "Prediction Error",
+                                  min = 0, max = 3,
+                                  value = 0, animate = FALSE),
+                      selectInput("ss", label = h5("Partition"), 
+                                  choices =as.list(unique(test$partition)))
+                      ,
+                      
+                      # dropdownButton(
+                      #   label = "Check some boxes", status = "default", width = 80,
+                      #   checkboxGroupInput(inputId = "check1", label = "Choose", choices = paste(1:26, ") Choice ", LETTERS))
+                      # )
+                      dropdownButton(
+                        label = "Check some boxes", status = "default", width = 80,
+                        # actionButton(inputId = "a2z", label = "Sort A to Z", icon = icon("sort-alpha-asc")),
+                        # actionButton(inputId = "z2a", label = "Sort Z to A", icon = icon("sort-alpha-desc")),
+                        br(),
+                        actionButton(inputId = "all", label = "(Un)select all"),
+                        checkboxGroupInput(inputId = "check2", label = "Choose", choices = paste(1:26, ") Choice ", LETTERS))
                       )
+                     ,width=2
                     )
                     
                     
                     
-                    
+                    )
                     
            ),
            ############## DETAIL PANEL ###################
