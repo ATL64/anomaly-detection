@@ -30,8 +30,8 @@ function(input, output, session) {
   output$original_ts <-
     renderPlot({
         dfa<-as.data.frame(rbind(
-        original=test[which(test$metric==input$metric&test$partition==input$partition),1:92],
-        date=names(test)[1:92]
+        original=test[which(test$metric==input$metric&test$partition==input$partition),3:92],
+        date=names(test)[3:92]
       ))
       
       dfo<-as.data.frame(t(dfa))

@@ -47,3 +47,13 @@ daily_forecast<-function(counts,type='history'){ #type can be 'history','monday'
 
 
 
+### "not in" function
+`%not in%` <- function (x, table) is.na(match(x, table, nomatch=NA_integer_))
+
+
+
+
+
+
+
+
