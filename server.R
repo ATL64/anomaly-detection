@@ -6,12 +6,14 @@ function(input, output, session) {
   
   output$plotos <-
     renderPlot({
-
+      
         df<-as.data.frame(rbind(
         original=test[which(test$metric==input$metric&test$partition==input$partition),63:92],
         prediction=predictions[which(test$metric==input$metric&test$partition==input$partition),],
         date=names(test)[63:92]
       ))
+        
+
 
       dft<-as.data.frame(t(df))
       dft$original<-as.numeric(as.character(dft$original))
@@ -30,9 +32,11 @@ function(input, output, session) {
   output$original_ts <-
     renderPlot({
         dfa<-as.data.frame(rbind(
-        original=test[which(test$metric==input$metric&test$partition==input$partition),1:92],
-        date=names(test)[1:92]
+        original=test[which(test$metric==input$metric&test$partition==input$partition),3:92],
+        date=names(test)[3:92]
       ))
+        
+
       
       dfo<-as.data.frame(t(dfa))
       dfo$original<-as.numeric(as.character(dfo$original))
@@ -62,7 +66,17 @@ function(input, output, session) {
   
 
 
-
+  observeEvent(input$all, {
+    if (is.null(input$check2)) {
+      updateCheckboxGroupInput(
+        session = session, inputId = "check2", selected = paste(1:26, ") Choice ", LETTERS)
+      )
+    } else {
+      updateCheckboxGroupInput(
+        session = session, inputId = "check2", selected = ""
+      )
+    }
+  })
 
 
 
@@ -91,7 +105,7 @@ function(input, output, session) {
     # them (name, x, y, color, size). Also sort by "alert_level"
     # so that Google Charts orders and colors the "alert_level"
     # consistently. 
-    df <- meta_frame %>% na.omit %>% filter(prediction_perc_error_abs > input$prediction_error ) %>% 
+    df <- meta_frame %>% na.omit %>%# filter(prediction_perc_error_abs > input$prediction_error ) %>%
       select(metric_partition,  metric_num, prediction_accuracy, alert_level,  #os
              model_std_dev) %>%
       arrange(alert_level)
@@ -104,7 +118,8 @@ function(input, output, session) {
       options = list(
         title = sprintf(
           "Model historical error vs today's error",
-          input$prediction_error),
+          # input$prediction_error
+          0),
         series = series
       )
     )
