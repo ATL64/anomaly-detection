@@ -128,7 +128,7 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                       ),
                       mainPanel(
                         
-                        plotOutput("plotos"),
+                        plotlyOutput("plotos"),
                         plotOutput("original_ts")
                       )
                     )

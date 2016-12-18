@@ -5,7 +5,7 @@ function(input, output, session) {
   # })
   
   output$plotos <-
-    renderPlot({
+    renderPlotly({
       
         df<-as.data.frame(rbind(
         original=test[which(test$metric==input$metric&test$partition==input$partition),63:92],
@@ -24,9 +24,12 @@ function(input, output, session) {
                                                     each = NROW(dft))),
                               Dates = rep(as.Date(date), 2)))
       
-      ggplot(tall, aes(Dates, value, colour = variable))+ geom_line()
-      
-      }, bg="transparent")
+      # ggplot(tall, aes(Dates, value, colour = variable))+ geom_line()
+      ggplot(plotdata) + geom_line(aes(y=y, x=x, colour = "sin"))+
+        geom_ribbon(aes(ymin=lower, ymax=upper, x=x, fill = "band"), alpha = 0.3)+
+        scale_colour_manual("",values="blue")+
+        scale_fill_manual("",values="grey12")
+      })
   
 
   output$original_ts <-
