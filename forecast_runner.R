@@ -27,6 +27,7 @@ library(RJDBC)
 library(fma)
 library(forecast)
 library(stringr)
+library(plotly)
 
 ###set default values
 #partitions with daily volume under lowVolMin will be excluded
