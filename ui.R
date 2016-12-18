@@ -91,17 +91,17 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                       tags$style(type="text/css", '#rightPanel { width:200px; float:left;}'),
                       id = "rightPanel",
                       
-                      selectInput("aa", label = h5("Metric"), 
-                                  choices =as.list(unique(test$metric))
-                                  , 
-                                  
-                                  selected = 1),
-                      sliderInput("prediction_error", "Prediction Error",
-                                  min = 0, max = 3,
-                                  value = 0, animate = FALSE),
-                      selectInput("ss", label = h5("Partition"), 
-                                  choices =as.list(unique(test$partition)))
-                      ,
+                      # selectInput("aa", label = h5("Metric"), 
+                      #             choices =as.list(unique(test$metric))
+                      #             , 
+                      #             
+                      #             selected = 1),
+                      # sliderInput("prediction_error", "Prediction Error",
+                      #             min = 0, max = 3,
+                      #             value = 0, animate = FALSE),
+                      # selectInput("ss", label = h5("Partition"), 
+                      #             choices =as.list(unique(test$partition)))
+                      # ,
                    
                       
                       uiOutput("input_ui"), width=2
