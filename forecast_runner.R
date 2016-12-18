@@ -28,6 +28,18 @@ library(fma)
 library(forecast)
 library(stringr)
 
+###set default values
+#partitions with daily volume under lowVolMin will be excluded
+lowVolMin<-1000
+
+
+
+##########
+
+
+
+
+
 meta_frame<-data.frame(partition=character(),
                        metric=character(),
                        alert_level=character(),
@@ -95,7 +107,9 @@ names(test)[(ncol(test)-length(factor_names)+1):ncol(test)]<-factor_names
                  test<-bind_rows(test,test_add)
                  }  
             } 
-          }
+    }
+
+
 
 test_factors<-which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )
 test_factors_names<-names(test[,which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )])
@@ -105,7 +119,7 @@ test[,test_factors][is.na(test[,test_factors])] <- ''
 test$partition<-apply(test[,test_factors],1,paste,collapse='|')
 for (t in test_factors){test[,t]<-as.factor(test[,t])}
 
-
+test<-test[apply(test[,3:92],1,mean)>lowVolMin,]
 
 meta_frame[1:length(test$partition),which(names(meta_frame)=='partition')]<-as.character(test$partition)
 meta_frame$metric<-test$metric
