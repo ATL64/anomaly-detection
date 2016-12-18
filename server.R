@@ -53,34 +53,34 @@ function(input, output, session) {
       }, bg="transparent") 
 
   
-  
-  output$summary <- renderPrint({
-    summary(cars)
-  })
-  
   output$tablea <-renderDataTable({
     meta_frame[,-which(names(meta_frame) %in% c('metric','prediction_perc_error_abs'))]
   },options = list(lengthMenu = c(10, 25, 50,100), pageLength = 10))
   
   
-  
-
-
-  observeEvent(input$all, {
-    if (is.null(input$check2)) {
+  lapply(test_factors_names, function(part) { 
+    observeEvent(input[[paste("all",as.character(part),sep='_')]], {  
+        if (is.null(input[[as.character(part)]])) {
       updateCheckboxGroupInput(
-        session = session, inputId = "check2", selected = paste(1:26, ") Choice ", LETTERS)
-      )
+        session = session, inputId = part, selected = unique(test[, which(names(test) == as.character(part))]))
+      
     } else {
-      updateCheckboxGroupInput(
-        session = session, inputId = "check2", selected = ""
-      )
-    }
+  updateCheckboxGroupInput(
+    session = session, inputId = as.character(part) , selected = " "
+  )
+  }})})   
+ 
+  output$input_ui <- renderUI({
+    lapply(test_factors_names, function(part) {
+ 
+                        dropdownButton(label = as.character(part), status = "default", width = 100,br(),
+                                       actionButton(inputId = paste("all",as.character(part),sep='_'), label = "(Un)select all"),
+                      checkboxGroupInput(inputId = as.character(part), label = "Choose", 
+                                         choices = unique(test[, which(names(test) == as.character(part))]))
+     )
+    })
+ 
   })
-
-
-
-
 
 
 ###############################################################################################################
@@ -99,17 +99,24 @@ function(input, output, session) {
     names = c("Great","Ok","Regular","Bad")
   )
   as.numeric(meta_frame$metric)
-  yearData <- reactive({ 
-    # Filter to the desired "prediction_perc_error_abs" , and put the columns
+  yearData <- reactive({   
+    # Filter to the desired checkboxes , and put the columns
     # in the order that Google's Bubble Chart expects
     # them (name, x, y, color, size). Also sort by "alert_level"
     # so that Google Charts orders and colors the "alert_level"
     # consistently. 
-    df <- meta_frame %>% na.omit %>%# filter(prediction_perc_error_abs > input$prediction_error ) %>%
-      select(metric_partition,  metric_num, prediction_accuracy, alert_level,  #os
+  
+    
+        df <- meta_frame %>% na.omit %>% 
+          filter(Reduce("&", lapply(factor_names, function(part) 
+          (as.character(meta_frame[,which(names(meta_frame)==as.character(part))]) %in% input[[as.character(part)]]) )
+          )) %>%
+          select(metric_partition,  metric_num, prediction_accuracy, alert_level,  #os
              model_std_dev) %>%
-      arrange(alert_level)
-  }) 
+          arrange(alert_level)
+  
+    
+  })   
 
   output$chart <- reactive({
     # Return the data and options
