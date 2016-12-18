@@ -122,7 +122,7 @@ for(k in 1:nrow(test)){ tryCatch({
   predictions[k,1:29]<-forecast_version_a[1:29]
   predictions[k,30]<-pointwise_prediction
   meta_frame[k,3:9]<-vector_update
-  print(paste(k/nrow(test),'%',sep=''))
+  print(paste(round(k/nrow(test)*100),'%',sep=''))
   print(paste('ETA:'))
   print((1-k/nrow(test))*(Sys.time()-a)/(k/nrow(test)))
 },

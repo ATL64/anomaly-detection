@@ -58,21 +58,25 @@ function(input, output, session) {
   },options = list(lengthMenu = c(10, 25, 50,100), pageLength = 10))
   
   
+  
+  #Checkboxes
+  
   lapply(test_factors_names, function(part) { 
     observeEvent(input[[paste("all",as.character(part),sep='_')]], {  
         if (is.null(input[[as.character(part)]])) {
       updateCheckboxGroupInput(
-        session = session, inputId = part, selected = unique(test[, which(names(test) == as.character(part))]))
+        session = session, inputId = part, selected = unique(test[, which(names(test) == as.character(part))])
+        )
       
     } else {
   updateCheckboxGroupInput(
-    session = session, inputId = as.character(part) , selected = " "
+    session = session, inputId = as.character(part) , selected = ""
   )
   }})})   
- 
-  output$input_ui <- renderUI({
-    lapply(test_factors_names, function(part) {
- 
+
+  output$input_ui <- renderUI({  
+  lapply(test_factors_names, function(part) {
+
                         dropdownButton(label = as.character(part), status = "default", width = 100,br(),
                                        actionButton(inputId = paste("all",as.character(part),sep='_'), label = "(Un)select all"),
                       checkboxGroupInput(inputId = as.character(part), label = "Choose", 
@@ -112,7 +116,7 @@ function(input, output, session) {
           (as.character(meta_frame[,which(names(meta_frame)==as.character(part))]) %in% input[[as.character(part)]]) )
           )) %>%
           select(metric_partition,  metric_num, prediction_accuracy, alert_level,  #os
-             model_std_dev) %>%
+             model_mean_error) %>%
           arrange(alert_level)
   
     

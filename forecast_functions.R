@@ -25,18 +25,18 @@ daily_forecast<-function(counts,type='history'){ #type can be 'history','monday'
   actual<-arima_ds[start_predictions:end_predictions]
   length_vp<-length(forecast_version_a)-1
   residuals_percent<-(forecast_version_a-actual)/forecast_version_a
-  standard_deviation<-sd(residuals_percent)
-  model_mean_error<-mean(abs((forecast_version_a-actual)/forecast_version_a))
-  pointwise_prediction<<-predict(fit, n.ahead = 1)$pred[1]*arima_ds[length(arima_ds)-1]+arima_ds[length(arima_ds)-1]
-  measurement<-arima_ds[length(arima_ds)]
-  res_perc<-abs((pointwise_prediction-measurement)/pointwise_prediction)
-  if(abs((pointwise_prediction-measurement)/pointwise_prediction)<standard_deviation){
+  standard_deviation<-sd(abs(residuals_percent))
+  model_mean_error<-mean(abs((forecast_version_a-actual)/forecast_version_a)) 
+  pointwise_prediction<<-predict(fit, n.ahead = 1)$pred[1]*arima_ds[length(arima_ds)-1]+arima_ds[length(arima_ds)-1] 
+  measurement<-arima_ds[length(arima_ds)] 
+  res_perc<-abs((pointwise_prediction-measurement)/pointwise_prediction) 
+  if(abs((pointwise_prediction-measurement)/pointwise_prediction)<model_mean_error){
     alert_level<-"Great"
-  }else if(standard_deviation<=res_perc & res_perc<standard_deviation*2){
+  }else if(model_mean_error<=res_perc & res_perc<(model_mean_error+standard_deviation)){
     alert_level<-"Ok"
-  }else if(2*standard_deviation<=res_perc& res_perc<3*standard_deviation){
+  }else if((model_mean_error+standard_deviation)<=res_perc& res_perc<(model_mean_error+2*standard_deviation)){
     alert_level<-"Regular"
-  }else if(res_perc>=3*standard_deviation){
+  }else if(res_perc>=(model_mean_error+2*standard_deviation)){
     alert_level<-"Bad"
   }
   vector_update<<-c(alert_level,model_mean_error,standard_deviation,measurement,
