@@ -77,10 +77,20 @@ function(input, output, session) {
   #     )
   #   }
   # })
+  
 
-  # updateCheckboxGroupInput(
-  #   session = session, inputId = "check2", selected = ""
-  # )
+  lapply(test_factors_names, function(part) { 
+    observeEvent(input[[paste("all",as.character(part),sep='_')]], {  
+        if (is.null(input[[as.character(part)]])) {
+      updateCheckboxGroupInput(
+        session = session, inputId = part, selected = unique(test[, which(names(test) == as.character(part))]))
+      
+    } else {
+  updateCheckboxGroupInput(
+    session = session, inputId = as.character(part) , selected = "  "
+  )
+  }})})   
+ # print(names(input))
 
   output$input_ui <- renderUI({
     lapply(test_factors_names, function(part) {
@@ -88,7 +98,7 @@ function(input, output, session) {
     # eval(  parse( text = paste( "
 
                         dropdownButton(label = as.character(part), status = "default", width = 80,br(),
-  
+                                       actionButton(inputId = paste("all",as.character(part),sep='_'), label = "(Un)select all"),
                       checkboxGroupInput(inputId = as.character(part), label = "Choose", 
                                          choices = unique(test[, which(names(test) == as.character(part))]))
                         # )",sep=''
