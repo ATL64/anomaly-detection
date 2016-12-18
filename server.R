@@ -1,8 +1,8 @@
 library(dplyr)
 function(input, output, session) {
-  output$plot <- renderPlot({
-    plot(cars, type=input$plotType)
-  })
+  # output$plot <- renderPlot({
+  #   plot(cars, type=input$plotType)
+  # })
   
   output$plotos <-
     renderPlot({
@@ -60,28 +60,49 @@ function(input, output, session) {
   
   
   #Checkboxes
-  
+  #print(unique(test[, which(names(test) == as.character(part))]))
+  vector_checkbox_all<-rep(1,length(test_factors_names))
   lapply(test_factors_names, function(part) { 
     observeEvent(input[[paste("all",as.character(part),sep='_')]], {  
-        if (is.null(input[[as.character(part)]])) {
+        if (is.null(input[[paste("all",as.character(part),sep='_')]])) {
       updateCheckboxGroupInput(
-        session = session, inputId = part, selected = unique(test[, which(names(test) == as.character(part))])
+        session = session, inputId = part, selected =  ""
         )
+    } else { 
+      if(vector_checkbox_all[which(as.character(part) %in% test_factors_names)]%% 2 == 0){
+        
+          updateCheckboxGroupInput(
+    
+          session = session, inputId = as.character(part) , selected = unique(test[, which(names(test) == as.character(part))])
+         
+           )
+        vector_checkbox_all[which(as.character(part) %in% test_factors_names)]<<-vector_checkbox_all[which(as.character(part) %in% test_factors_names)]+1
+        
+        } else {
+            updateCheckboxGroupInput(
+              
+              session = session, inputId = as.character(part) , selected = ""
+            )
+            vector_checkbox_all[which(as.character(part) %in% test_factors_names)]<<-vector_checkbox_all[which(as.character(part) %in% test_factors_names)]+1
+            
+          }
       
-    } else {
-  updateCheckboxGroupInput(
-    session = session, inputId = as.character(part) , selected = ""
-  )
+      
   }})})   
+  
 
   output$input_ui <- renderUI({  
   lapply(test_factors_names, function(part) {
 
                         dropdownButton(label = as.character(part), status = "default", width = 100,br(),
-                                       actionButton(inputId = paste("all",as.character(part),sep='_'), label = "(Un)select all"),
+                                       actionButton(inputId = paste("all",as.character(part),sep='_'), label = "Select all"),
                       checkboxGroupInput(inputId = as.character(part), label = "Choose", 
-                                         choices = unique(test[, which(names(test) == as.character(part))]))
-     )
+                                         choices = unique(test[, which(names(test) == as.character(part))]),
+                                         selected = unique(test[, which(names(test) == as.character(part))])
+                                  
+                                         )
+     ) 
+   
     })
  
   })
@@ -124,16 +145,24 @@ function(input, output, session) {
 
   output$chart <- reactive({
     # Return the data and options
+    if(is.null(input[[as.character(factor_names[1])]])){
     list(
       data = googleDataTable(yearData()),
       options = list(
-        title = sprintf(
-          "Model historical error vs today's error",
+        title ="Metric vs Score",
           # input$prediction_error
-          0),
         series = series
       )
-    )
+    )} else {
+      list(
+        data = googleDataTable(yearData()),
+        options = list(
+          title ="Metric vs Score",
+          # input$prediction_error
+          series = series
+        ))
+      
+    }
   })
   
 }

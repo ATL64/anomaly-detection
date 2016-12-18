@@ -133,7 +133,7 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                       )
                     )
            ),
-           ############### LOGS PANEL ###################
+           ############### Table PANEL ###################
            tabPanel("Table",
                   dataTableOutput('tablea')
                  
