@@ -1,32 +1,44 @@
 library(dplyr)
 function(input, output, session) {
-  # output$plot <- renderPlot({
-  #   plot(cars, type=input$plotType)
-  # })
-  
+
   output$plotos <-
-    renderPlot({
+    renderPlotly({
+
       
-        df<-as.data.frame(rbind(
+      df<-as.data.frame(rbind(
         original=test[which(test$metric==input$metric&test$partition==input$partition),63:92],
-        prediction=predictions[which(test$metric==input$metric&test$partition==input$partition),],
-        date=names(test)[63:92]
-      ))
         
-
-
+        under=predictions[which(test$metric==input$metric&test$partition==input$partition),]*(1-
+        meta_frame[which(test$metric==input$metric&test$partition==input$partition),]$model_mean_error-
+        meta_frame[which(test$metric==input$metric&test$partition==input$partition),]$model_std_dev)
+        ,
+        over=predictions[which(test$metric==input$metric&test$partition==input$partition),]*(1+
+        meta_frame[which(test$metric==input$metric&test$partition==input$partition),]$model_mean_error +
+        meta_frame[which(test$metric==input$metric&test$partition==input$partition),]$model_std_dev)
+        ,
+        date=names(test)[63:92]
+      )) 
+      
+      
+      
       dft<-as.data.frame(t(df))
       dft$original<-as.numeric(as.character(dft$original))
-      dft$prediction<-as.numeric(as.character(dft$prediction))
-      tall <- with(dft,
-                   data.frame(value = c(original, prediction),
-                              variable = factor(rep(c("original","prediction"),
-                                                    each = NROW(dft))),
-                              Dates = rep(as.Date(date), 2)))
+      dft$under<-as.numeric(as.character(dft$under))
+      dft$over<-as.numeric(as.character(dft$over))
       
-      ggplot(tall, aes(Dates, value, colour = variable))+ geom_line()
       
-      }, bg="transparent")
+      
+      ggplot(dft) + geom_line(aes(y=original, x=date, colour = "original",group=1))+
+        geom_ribbon(aes(ymin=under, ymax=over, x=date, fill = "band",group=1), alpha = 0.3)+
+        scale_colour_manual("",values="blue")+
+        scale_fill_manual("",values="grey12")+
+        scale_x_discrete(name ='',breaks=as.character(dft$date)[which(as.numeric(dft$date)%%7==0)],
+                         labels=as.character(dft$date)[which(as.numeric(dft$date)%%7==0)]) +
+        scale_y_continuous(name='Counts', limits=c(min(dft$under)/3,max(dft$over)))+
+        theme(legend.position="none")
+      
+      
+      })
   
 
   output$original_ts <-
