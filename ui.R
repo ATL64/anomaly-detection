@@ -102,45 +102,9 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                       selectInput("ss", label = h5("Partition"), 
                                   choices =as.list(unique(test$partition)))
                       ,
+                   
                       
-                      # dropdownButton(
-                      #   label = "Check some boxes", status = "default", width = 80,
-                      #   checkboxGroupInput(inputId = "check1", label = "Choose", choices = paste(1:26, ") Choice ", LETTERS))
-                      # )
-                    
-                      
-                      #   dropdownButton(
-                      #   label = "Check some boxes", status = "default", width = 80,
-                      #   # actionButton(inputId = "a2z", label = "Sort A to Z", icon = icon("sort-alpha-asc")),
-                      #   # actionButton(inputId = "z2a", label = "Sort Z to A", icon = icon("sort-alpha-desc")),
-                      #   br(),
-                      #   # actionButton(inputId = "all", label = "(Un)select all"),
-                      #   checkboxGroupInput(inputId = "check2", label = "Choose", choices = paste(1:26, ") Choice ", LETTERS))
-                      # )
-                      # 
-                      
-                      #dynamic dropdown -->Add this for the All button after br(),! # actionButton(inputId = "all", label = "(Un)select all"),
-                      
-                      #ui:
-                      
-                      uiOutput("input_ui"),
-                       
-                      
-                      # for (part in test_factors_names){
-                      #  eval( parse( text = paste( "
-                      # 
-                      #   dropdownButton(label = \"",part,"\", status = \"default\", width = 80,br(),
-                      # 
-                      #   checkboxGroupInput(inputId = \"",part,"\", label = \"Choose\", choices = unique(test[, which(names(test) == ",part,")]))
-                      #   ),",sep=''
-                      #   )))}
-
-                   #?parse
-                      
-                      
-                      
-                      
-                     width=2
+                      uiOutput("input_ui"), width=2
                     )
                     
                     
