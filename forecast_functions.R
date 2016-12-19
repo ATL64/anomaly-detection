@@ -88,3 +88,94 @@ dropdownButton <- function(label = "", status = c("default", "primary", "success
 
 
 
+##ADD RATIOS FUNCTIONS:
+
+
+
+AddRatiosTest<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+
+  dsab<-ds[which(ds$metric==ab),]
+  dsbel<-ds[which(ds$metric==bel),]  
+  
+  dsratio<-dsab  
+  dsratio[,3:92]<-dsab[,3:92]/dsbel[,3:92]
+  
+  dsratio$metric<-ratioName
+  
+  return(dsratio)
+  
+}
+
+
+
+
+AddRatiosPredictions<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+  ab<-'music'
+  bel<-'love'
+  ratioName<-'mlr'
+  ds<-predictions
+  
+  dsab<-predictions[which(test$metric==ab),]
+  dsbel<-predictions[which(test$metric==bel),]  
+  
+  dsratio<-dsab  
+  dsratio<-dsab/dsbel
+  
+
+  return(dsratio)
+  
+}
+
+
+
+
+
+AddRatiosMF<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+  ab<-'music'
+  bel<-'love'
+  ratioName<-'mlr'
+  ds<-meta_frame
+  
+  dsab<-meta_frame[which(meta_frame$metric==ab),]
+  dsbel<-meta_frame[which(meta_frame$metric==bel),]  
+  
+  dsratio<-dsab  
+
+  dsratio$metric<-ratioName
+
+  
+  
+  
+  
+  
+  
+  dsratio$alert_level
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  return(dsratio)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -162,9 +162,40 @@ meta_frame$metric_partition<-paste(meta_frame$metric,meta_frame$partition,sep="-
 meta_frame$predicted_value<-round(meta_frame$predicted_value,3)
 meta_frame$prediction_abs_error<-round(meta_frame$prediction_abs_error,3)
 meta_frame$real_value<-round(meta_frame$real_value,3)
-meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.25)
 meta_frame$prediction_accuracy<-1-meta_frame$prediction_perc_error_abs
 meta_frame<-cbind(meta_frame,test[which(names(test) %in% factor_names)])
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################
+####### ADD RATIOS TIME SERIES ######
+#####################################
+
+
+#Need to add them to test and meta_frame
+
+#Add to test:
+
+test<-rbind(test,AddRatiosTest('music','love',test,'mlr'))
+
+predictions<-rbind(predictions,AddRatiosPredictions('music','love',test,'mlr'))
+
+
+
+
+meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.15)
+
+
+
 
 
 
