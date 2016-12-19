@@ -104,7 +104,9 @@ navbarPage(title=div(#img(src="logo.png",width = "100px", height = "35px"),
                       # ,
                    
                       
-                      uiOutput("input_ui"), width=2
+                      uiOutput("input_ui"),
+                      
+                      width=2
                     )
                     
                     

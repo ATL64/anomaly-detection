@@ -164,6 +164,7 @@ meta_frame$prediction_abs_error<-round(meta_frame$prediction_abs_error,3)
 meta_frame$real_value<-round(meta_frame$real_value,3)
 meta_frame$prediction_accuracy<-1-meta_frame$prediction_perc_error_abs
 meta_frame<-cbind(meta_frame,test[which(names(test) %in% factor_names)])
+meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.15)
 
 
 
@@ -181,18 +182,19 @@ meta_frame<-cbind(meta_frame,test[which(names(test) %in% factor_names)])
 #####################################
 
 
-#Need to add them to test and meta_frame
+#Need to add them to test,predictions and meta_frame
 
 #Add to test:
 
-test<-rbind(test,AddRatiosTest('music','love',test,'mlr'))
+numerator<-'music'
+  denominator<-'love'
+  name_of_ratio<-'mlr'
 
-predictions<-rbind(predictions,AddRatiosPredictions('music','love',test,'mlr'))
+test<-rbind(test,MakeRatiosTest(numerator,denominator,test,name_of_ratio)) 
+predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,test,name_of_ratio)) 
+meta_frame<-rbind(meta_frame, MakeRatiosMF(numerator,denominator,test, meta_frame,predictions,name_of_ratio)) 
 
 
-
-
-meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.15)
 
 
 
