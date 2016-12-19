@@ -34,7 +34,7 @@ function(input, output, session) {
         scale_fill_manual("",values="grey12")+
         scale_x_discrete(name ='',breaks=as.character(dft$date)[which(as.numeric(dft$date)%%7==0)],
                          labels=as.character(dft$date)[which(as.numeric(dft$date)%%7==0)]) +
-        scale_y_continuous(name='Counts', limits=c(min(dft$under)/3,max(dft$over)))+
+        scale_y_continuous(name='Counts', limits=c(min(dft$under)/3,1.5*max(dft$over)))+
         theme(legend.position="none")
       
       

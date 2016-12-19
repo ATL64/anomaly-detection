@@ -92,7 +92,7 @@ dropdownButton <- function(label = "", status = c("default", "primary", "success
 
 
 
-AddRatiosTest<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+MakeRatiosTest<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
 
   dsab<-ds[which(ds$metric==ab),]
   dsbel<-ds[which(ds$metric==bel),]  
@@ -109,7 +109,7 @@ AddRatiosTest<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed
 
 
 
-AddRatiosPredictions<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+MakeRatiosPredictions<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
   ab<-'music'
   bel<-'love'
   ratioName<-'mlr'
@@ -130,36 +130,61 @@ AddRatiosPredictions<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be
 
 
 
-AddRatiosMF<-function(ab,bel,ds,ratioName){ #ab,bel and ratioNAme to be passed as characters. ds has to be test.
-  ab<-'music'
-  bel<-'love'
-  ratioName<-'mlr'
-  ds<-meta_frame
+MakeRatiosMF<-function(ab,bel,ds, mf, pred, ratioName){  #ab,bel and ratioNAme to be passed as characters. ds has to be test.
+#   ab<-'music'
+#   bel<-'love'
+#   ratioName<-'mlr'
+#   # mf is meta_frame, ds is test
+# mf<-meta_frame
+#   pred<-predictions
+#   ds<-test
   
-  dsab<-meta_frame[which(meta_frame$metric==ab),]
-  dsbel<-meta_frame[which(meta_frame$metric==bel),]  
+  dsab<-ds[which(ds$metric==ab),63:92]
+  dsbel<-ds[which(ds$metric==bel),63:92]  
   
-  dsratio<-dsab  
-
+  predab<-pred[which(ds$metric==ab),]
+  predbel<-pred[which(ds$metric==bel),]  
+  
+  
+  dsratio<-mf[which(mf$metric==bel),]  
   dsratio$metric<-ratioName
 
+ # error analysis of each row--> we have to use ds dataset
+
+ 
+  residuals_percent<-(dsab/dsbel-predab/predbel)/(dsab/dsbel)
+  standard_deviation<- apply(abs(residuals_percent),1,sd)
+  model_mean_error<-apply(abs((predab/predbel-dsab/dsbel)/(predab/predbel)),1,mean)
+  dsratio$model_mean_error<-model_mean_error
+  dsratio$model_std_dev<-standard_deviation
+  dsratio$predicted_value<-(predab/predbel)[,30]
+  dsratio$prediction_abs_error<-(dsab/dsbel)[,30]-(predab/predbel)[,30]
+  dsratio$prediction_perc_error<-residuals_percent[,30]
+  dsratio$prediction_perc_error_abs<-abs(residuals_percent[,30])
+  dsratio$real_value<-(dsab/dsbel)[,30]
+  dsratio$prediction_accuracy<-1-dsratio$prediction_perc_error_abs
+  dsratio$metric_num<-max(as.numeric(mf$metric))+1+rnorm(nrow(dsratio),0,0.15)
+  pr<-which(names(mf)=='predicted_value')
+  pe<-which(names(mf)=='prediction_perc_error_abs')
+  me<-which(names(mf)=='model_mean_error')
+  re<-which(names(mf)=='real_value')
+  ms<-which(names(mf)=='model_std_dev')
+  dsratio$alert_level<-apply(dsratio,1, function(x) {#as.numeric(x[pr]))#as.numeric(x[pr]))
+     pr_<-as.numeric(x[pr])
+     pe_<-as.numeric(x[pe])
+     me_<-as.numeric(x[me])
+     re_<-as.numeric(x[re])
+     ms_<-as.numeric(x[ms])
+  if(abs((pr_-re_)/pr_)<me_){
+    return("Great")
+  }else if(me_<=pe_ & pe_<(me_+ms_)){
+    return("Ok")
+  }else if((me_+ms_)<=pe_& pe_<(me_+2*ms_)){
+    return("Regular")
+  }else if(pe_>=(me_+2*ms_)){
+    return("Bad")
+  }})
   
-  
-  
-  
-  
-  
-  dsratio$alert_level
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    
   return(dsratio)
   
 }
