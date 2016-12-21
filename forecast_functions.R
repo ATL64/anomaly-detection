@@ -197,6 +197,54 @@ MakeRatiosMF<-function(ab,bel,ds, mf, pred, ratioName){  #ab,bel and ratioNAme t
 
 
 
+#############function daily forecast for tomorrow
+
+daily_forecast_new<-function(counts,newd,m,type='history'){ #type can be 'history','monday', or 'weekday'
+  
+  library(forecast)
+    # m<-1  
+    # counts<-test[m,3:92]#to be commented out  
+    #  newd<-new_data_test[m,3]
+    
+    vector_update<-c()
+    vector_preds<-c()
+    arima_ds<-ts(counts,start=1,freq=7)
+    fit<-auto.arima(diff(log(arima_ds[1:length(arima_ds)])), stepwise=FALSE,max.order=15)
+    vector_preds <-predict(fit, n.ahead = 1)$pred[1]*arima_ds[length(arima_ds)]+arima_ds[length(arima_ds)]
+    
+    # start_predictions<-d+1
+    # end_predictions<-length(arima_ds)
+    # actual<-arima_ds[start_predictions:end_predictions]
+    # length_vp<-length(forecast_version_a)-1
+    
+    residuals_percent<-(vector_preds-newd)/vector_preds
+    # standard_deviation<-sd(abs(residuals_percent))
+    # model_mean_error<-mean(abs((forecast_version_a-actual)/forecast_version_a))
+    # pointwise_prediction<<-predict(fit, n.ahead = 1)$pred[1]*arima_ds[length(arima_ds)-1]+arima_ds[length(arima_ds)-1]
+    # measurement<-arima_ds[length(arima_ds)]
+    # res_perc<-abs((pointwise_prediction-measurement)/pointwise_prediction)
+    abs_error<-vector_preds-newd
+    abs_error_perc<-abs(residuals_percent)
+    model_mean_error<-meta_frame$model_mean_error[m]
+    standard_deviation<-meta_frame$model_std_dev[m]
+    
+        
+  if(abs_error_perc<model_mean_error){
+    alert_level<-"Great"
+  }else if(model_mean_error<=abs_error_perc & abs_error_perc<(model_mean_error+standard_deviation)){
+    alert_level<-"Ok"
+  }else if((model_mean_error+standard_deviation)<=abs_error_perc& abs_error_perc<(model_mean_error+2*standard_deviation)){
+    alert_level<-"Regular"
+  }else if(abs_error_perc>=(model_mean_error+2*standard_deviation)){
+    alert_level<-"Bad"
+  }
+  vector_update<-as.data.frame(cbind(alert_level,as.numeric(model_mean_error),standard_deviation,newd,
+                    vector_preds,newd-vector_preds, (newd-vector_preds)/vector_preds))
+
+    names(vector_update)<-names(meta_frame_new[m,3:9])
+    return(vector_update)
+    
+} #end of function daily_forecast    
 
 
 

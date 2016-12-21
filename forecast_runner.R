@@ -57,7 +57,6 @@ meta_frame<-data.frame(partition=character(),
 db_data<-read.csv('music_processed.csv')
 
 
-#MANUALLY ADD CONVERSION RATE COLUMNS HERE
 
 db_factors<-which(lapply(db_data,class) %in% ('factor') & sapply(db_data, function(x) all(is.na(as.Date(as.character(x),format="%Y-%m-%d")))))
 factor_names<-names(db_data)[db_factors]
@@ -120,7 +119,10 @@ test[,test_factors][is.na(test[,test_factors])] <- ''
 test$partition<-apply(test[,test_factors],1,paste,collapse='|')
 for (t in test_factors){test[,t]<-as.factor(test[,t])}
 
-test<-test[apply(test[,3:92],1,mean)>lowVolMin,]
+lowVolBool<-apply(test[,3:92],1,mean)>lowVolMin
+test<-test[lowVolBool,]
+test_low_vol_rows<-nrow(test)
+
 
 meta_frame[1:length(test$partition),which(names(meta_frame)=='partition')]<-as.character(test$partition)
 meta_frame$metric<-test$metric
@@ -193,6 +195,16 @@ numerator<-'music'
 test<-rbind(test,MakeRatiosTest(numerator,denominator,test,name_of_ratio)) 
 predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,test,name_of_ratio)) 
 meta_frame<-rbind(meta_frame, MakeRatiosMF(numerator,denominator,test, meta_frame,predictions,name_of_ratio)) 
+
+
+
+
+
+##################################
+#####TOMORROW'S FORECAST##########
+################################## (this code will run in new_day_update.R as well, for updates)
+
+
 
 
 
