@@ -1,8 +1,6 @@
 
 #INPUT NEW DAY
 new_data<-db_data[db_data$date=='2016-12-11',]
-#I need to transform new_data from sql format to test format.....
-
 
 
 
@@ -103,11 +101,9 @@ predictions_new[1:29]<-predictions_new[2:30]
 
 a<-Sys.time()
 for(k in 1:test_low_vol_rows){ tryCatch({
-  # forecast_version_a<-c()
    vector_update<-c()
-  # predictions_new[k,]<-
   vector_update<-daily_forecast_new(test[k,3:92],new_data_test[k,3],k)
-  meta_frame_new[k,]$alert_level<-as.character(vector_update$alert_level)
+  meta_frame_new[k,]$alert_level<-as.character(vector_update$alert_level)[[1]]
   meta_frame_new[k,]$model_mean_error<-as.numeric(as.character(vector_update$model_mean_error))
   meta_frame_new[k,]$model_std_dev<-as.numeric(as.character(vector_update$model_std_dev))
     meta_frame_new[k,]$real_value<-as.numeric(as.character(vector_update$real_value))
@@ -159,46 +155,26 @@ numerator<-'music'
 denominator<-'love'
 name_of_ratio<-'mlr'
 
-new_data_test<-rbind(new_data_test,MakeRatiosTest(numerator,denominator,new_data_test,name_of_ratio)) 
+test_new<-rbind(test_new,MakeRatiosTest(numerator,denominator,test_new,name_of_ratio)) 
 predictions_new<-rbind(predictions_new,MakeRatiosPredictions(numerator,denominator,new_data_test,name_of_ratio)) 
-meta_frame_new<-rbind(meta_frame_new, MakeRatiosMF(numerator,denominator,new_data_test, meta_frame_new,predictions,name_of_ratio)) 
+meta_frame_new<-rbind(meta_frame_new, MakeRatiosMF(numerator,denominator,test_new, meta_frame_new,predictions,name_of_ratio)) 
 
-
+mamam<-meta_frame_new
+mamam$alert_level<-unlist(meta_frame_new$alert_level)
 
 aux_test<-test
 aux_meta_frame<-meta_frame
 aux_predictions<-predictions
 
+# test<-aux_test
+# meta_frame<-aux_meta_frame
+# predictions<-aux_predictions
+
 test<-test_new
 meta_frame<-meta_frame_new
 predictions<-predictions_new
 
-
-
-
-
-
-
-##########
-# meta_frame_new<-meta_frame
-test_new<-test
-predictions_new<-predictions
-
-test_new[,3:91]<-test_new[,4:92]
-test_new[,92]<-new_data #change new data for processed new data
-predictions_new[1:29]<-predictions_new[2:30]
-
-predictions_new <-daily_forecast_new(test_new)
-
-#function
-#update meta_frame
-
-
-
-
-
-#update models
-
+# meta_frame<-meta_frame[meta_frame$alert_level!='NULL',]
 
 
 
