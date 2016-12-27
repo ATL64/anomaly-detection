@@ -15,7 +15,6 @@ library(pROC)
 library(AUC)
 library(ggplot2)
 library(sqldf)
-library(pmml)#In case we want to do a PMML export
 library(foreach)
 #library(doMCC)
 #registerDoMC(cores=4)
@@ -28,7 +27,7 @@ library(fma)
 library(forecast)
 library(stringr)
 library(plotly)
-
+library(doSNOW)
 ###set default values
 #partitions with daily volume under lowVolMin will be excluded
 lowVolMin<-1000
@@ -150,8 +149,7 @@ meta_frame$metric<-test$metric
 
 predictions<-test[63:92]
 
-
-cl <- makeSOCKcluster(3)
+cl <- makeSOCKcluster(7)
 registerDoSNOW(cl)
 iterations<-nrow(test)
 pb <- txtProgressBar(max = iterations, style = 3)
@@ -164,13 +162,11 @@ opts <- list(progress = progress)
 a<-Sys.time()
 mat<-foreach(k =1:(nrow(test)),.options.snow = opts) %dopar% { tryCatch({
   ret<-daily_forecast(test[k,3:92])
-},
-error=function(cond) {
+},error=function(cond) {
   message(cond)
   # Choose a return value in case of error
   return("ERROR")
-})
-}
+})}
 print(Sys.time()-a)
 close(pb)
 stopCluster(cl)
@@ -227,7 +223,7 @@ denominator<-'sales'
 name_of_ratio<-'cost_sale'
 
 test<-rbind(test,MakeRatiosTest(numerator,denominator,test,name_of_ratio)) 
-predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,test,name_of_ratio,test)) 
+predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,predictions,name_of_ratio,test)) 
 meta_frame<-rbind(meta_frame, MakeRatiosMF(numerator,denominator,test, meta_frame,predictions,name_of_ratio)) 
 
 
