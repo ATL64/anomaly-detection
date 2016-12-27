@@ -40,6 +40,8 @@ lowVolMin<-1000
 
 
 
+db_data<-read.csv('sample_data.csv')
+
 
 meta_frame<-data.frame(partition=character(),
                        metric=character(),
@@ -54,9 +56,10 @@ meta_frame<-data.frame(partition=character(),
 )
 
 
-db_data<-read.csv('music_processed.csv')
 
-
+db_data[sapply(db_data, is.character)] <- lapply(db_data[sapply(db_data, is.character)], 
+                                                 as.factor)
+str(db_data)
 
 db_factors<-which(lapply(db_data,class) %in% ('factor') & sapply(db_data, function(x) all(is.na(as.Date(as.character(x),format="%Y-%m-%d")))))
 factor_names<-names(db_data)[db_factors]
@@ -75,6 +78,7 @@ test<-recast(db_data,variable+partition~date,id.var=1:2)
 
 names(test)[1:2]<-c('metric','partition')
 original_rows<-nrow(test)
+test[is.na(test)]<-0
 #Make column per variable in test
 
 # test<-cbind(test,strsplit(as.character(test$partition),'--'))
@@ -82,34 +86,50 @@ test<-cbind(test,str_split_fixed(as.character(test$partition),"\\|", length(fact
 names(test)[(ncol(test)-length(factor_names)+1):ncol(test)]<-factor_names
 #Find all possible aggregations and bind them to test:
 
-    for(j in 1:(length(factor_names)-1)){
-      combinations<-combn(factor_names, j, simplify = FALSE)
-    for(metric in unique(test$metric)){
-      for(comb in combinations){
+for(j in 1:(length(factor_names)-1)){
+  combinations<-combn(factor_names, j, simplify = FALSE)
+  for(metric in unique(test$metric)){
+    for(comb in combinations){
       
-                 test_add<-cbind(test[1:original_rows,3:92][test[1:original_rows,]$metric==metric,],
-                                 test[1:original_rows,93:ncol(test)][test[1:original_rows,]$metric==metric,
-                                                                     which(names(test[,93:ncol(test)]) %in% comb)])
-                 names(test_add)[91:ncol(test_add)]<-comb
-                 date_names<-names(test_add)[1:90]
-                 names(test_add)[1:90]<-format(as.Date(names(test_add)[1:90]),"%b_%d_%Y")
-                 test_add<-sqldf(
-                   paste(
-                   paste("select sum(", paste(names(test_add)[1:90],collapse="), sum("),"), ",
-                             paste(comb,collapse=", "),sep=" "), " from test_add group by ",
-                   paste(comb,collapse=", "),
-                   sep=' '
-                             )# View(a)
-                       )
-                 names(test_add)[1:90]<-date_names
-                 test_add<-cbind(test_add,metric)
-                 str(test_add)
-                 test<-bind_rows(test,test_add)
-                 }  
-            } 
-    }
+      test_add<-cbind(test[1:original_rows,3:92][test[1:original_rows,]$metric==metric,],
+                      test[1:original_rows,93:ncol(test)][test[1:original_rows,]$metric==metric,
+                                                          which(names(test[,93:ncol(test)]) %in% comb)])
+      names(test_add)[91:ncol(test_add)]<-comb
+      date_names<-names(test_add)[1:90]
+      names(test_add)[1:90]<-format(as.Date(names(test_add)[1:90]),"%b_%d_%Y")
+      test_add<-sqldf(
+        paste(
+          paste("select sum(", paste(names(test_add)[1:90],collapse="), sum("),"), ",
+                paste(comb,collapse=", "),sep=" "), " from test_add group by ",
+          paste(comb,collapse=", "),
+          sep=' '
+        )# View(a)
+      )
+      names(test_add)[1:90]<-date_names
+      test_add<-cbind(test_add,metric)
+      #str(test_add)
+      test<-bind_rows(test,test_add)
+    }  
+  } 
+} #coercing warning is expected
 
-
+#Add overall metrics
+for(metric in unique(test$metric)){
+  test_add<-test[1:original_rows,3:92][test[1:original_rows,]$metric==metric,]
+  date_names<-names(test_add)[1:90]
+  names(test_add)[1:90]<-format(as.Date(names(test_add)[1:90]),"%b_%d_%Y")
+  test_add<-sqldf(
+    paste(
+      paste("select sum(", paste(names(test_add)[1:90],collapse="), sum("),") ",
+            sep=" "), " from test_add ",
+      sep=' '
+    )# View(a)
+  )
+  names(test_add)[1:90]<-date_names
+  test_add<-cbind(test_add,metric)
+  #str(test_add)
+  test<-bind_rows(test,test_add)
+}
 
 test_factors<-which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )
 test_factors_names<-names(test[,which(lapply(test,class) %in% ('factor') & names(test) %not in% c('metric','partition') )])
@@ -120,6 +140,7 @@ test$partition<-apply(test[,test_factors],1,paste,collapse='|')
 for (t in test_factors){test[,t]<-as.factor(test[,t])}
 
 lowVolBool<-apply(test[,3:92],1,mean)>lowVolMin
+sum(lowVolBool)
 test<-test[lowVolBool,]
 test_low_vol_rows<-nrow(test)
 
@@ -128,20 +149,21 @@ meta_frame[1:length(test$partition),which(names(meta_frame)=='partition')]<-as.c
 meta_frame$metric<-test$metric
 
 predictions<-test[63:92]
-cl<-makeCluster(3)
-registerDoParallel(cl)
+
+
+cl <- makeSOCKcluster(3)
+registerDoSNOW(cl)
+iterations<-nrow(test)
+pb <- txtProgressBar(max = iterations, style = 3)
+progress <- function(n) setTxtProgressBar(pb, n)
+opts <- list(progress = progress)
+
+
+
 
 a<-Sys.time()
-for(k in 1:nrow(test)){ tryCatch({
-  forecast_version_a<-c()
-  vector_update<-c() 
-  daily_forecast(test[k,3:92])
-  predictions[k,1:29]<-forecast_version_a[1:29]
-  predictions[k,30]<-pointwise_prediction
-  meta_frame[k,3:9]<-vector_update
-  print(paste(round(k/nrow(test)*100),'%',sep=''))
-  print(paste('ETA:'))
-  print((1-k/nrow(test))*(Sys.time()-a)/(k/nrow(test)))
+mat<-foreach(k =1:(nrow(test)),.options.snow = opts) %dopar% { tryCatch({
+  ret<-daily_forecast(test[k,3:92])
 },
 error=function(cond) {
   message(cond)
@@ -150,7 +172,17 @@ error=function(cond) {
 })
 }
 print(Sys.time()-a)
-#back<-meta_frame
+close(pb)
+stopCluster(cl)
+
+for(k in 1:nrow(test)){
+  meta_frame[k,3:9]<-mat[[k]][[1]]
+  predictions[k,1:29]<-mat[[k]][[2]][1:29]   
+  predictions[k,30]<-mat[[k]][[3]]
+}
+
+
+# back<-meta_frame
 
 meta_frame$metric<-as.factor(meta_frame$metric)
 meta_frame$model_mean_error<-round(as.numeric(meta_frame$model_mean_error),3)
@@ -183,26 +215,61 @@ meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.
 ####### ADD RATIOS TIME SERIES ######
 #####################################
 
-
+#Copy paste the six lines, modify the first three and execute to make additional ratios.
+#TODO: MAKE THIS FOR ARBITRARY FUNCTIONS
 #Need to add them to test,predictions and meta_frame
 
 #Add to test:
 
-numerator<-'music'
-  denominator<-'love'
-  name_of_ratio<-'mlr'
+
+numerator<-'costs'
+denominator<-'sales'
+name_of_ratio<-'cost_sale'
 
 test<-rbind(test,MakeRatiosTest(numerator,denominator,test,name_of_ratio)) 
-predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,test,name_of_ratio)) 
+predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,test,name_of_ratio,test)) 
 meta_frame<-rbind(meta_frame, MakeRatiosMF(numerator,denominator,test, meta_frame,predictions,name_of_ratio)) 
+
+
+
+
+meta_frame$alert_level[sapply(meta_frame$alert_level, is.null)] <- "Bad"
+meta_frame$alert_level<-unlist(meta_frame$alert_level)
+
+
+
+
+
+
+
 
 
 
 
 
 ##################################
-#####TOMORROW'S FORECAST##########
-################################## (this code will run in new_day_update.R as well, for updates)
+#####TOMORROW'S FORECAST########## Prepares data for the first "next day"
+################################## (similar code will run in new_day_update.R as well, for updates)
+
+
+
+meta_frame_new<-meta_frame[1:test_low_vol_rows,]
+
+a<-Sys.time()
+for(k in 1:test_low_vol_rows){tryCatch({ #TODO FOREACH
+  vector_update<-c()
+  vector_update<-daily_forecast_new(test[k,3:91],test[k,92],k)
+ meta_frame_new[k,]$predicted_value<-as.numeric(as.character(vector_update$predicted_value))
+  print(paste(round(k/test_low_vol_rows*100),'%',sep=''))
+  print(paste('ETA:'))
+  print((1-k/test_low_vol_rows)*(Sys.time()-a)/(k/test_low_vol_rows))  
+},  
+error=function(cond) {
+  message(cond)
+  # Choose a return value in case of error
+  return("ERROR")
+})  
+}
 
 
 
