@@ -1,7 +1,6 @@
 library(rjson)
 library(curl)
 library(devtools)
-#devtools::install_github("jcheng5/googleCharts")
 library(shiny)
 library(scales)
 library(reshape2)
