@@ -1,4 +1,9 @@
+load('exampleSpace.RData')
 library(dplyr)
+library(plotly)
+library(ggplot2)
+library(googleCharts)
+library(shinythemes)
 function(input, output, session) {
   
   output$plotos <-

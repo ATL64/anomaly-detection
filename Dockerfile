@@ -19,7 +19,7 @@ RUN wget --no-verbose https://s3.amazonaws.com/rstudio-shiny-server-os-build/ubu
     gdebi -n ss-latest.deb && \
     rm -f version.txt ss-latest.deb
 
-RUN R -e "install.packages(c('shiny', 'rmarkdown', 'ggplot2', 'dplyr', 'plotly','devtools'), repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'ggplot2', 'dplyr', 'plotly','devtools','shinythemes'), repos='http://cran.rstudio.com/')"
 
 RUN R -e "devtools::install_github('jcheng5/googleCharts')"
 
