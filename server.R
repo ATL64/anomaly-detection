@@ -1,3 +1,4 @@
+load('exampleSpace.RData')
 library(dplyr)
 function(input, output, session) {
   
