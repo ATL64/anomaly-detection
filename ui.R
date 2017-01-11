@@ -1,14 +1,6 @@
-library(markdown)
-# getOption("download.file.method")
-# options(download.file.method = "wininet")
 
-# packageVersion("curl")
-# packageVersion("httr")
-
-# devtools::install_github("jcheng5/googleCharts")
-# devtools::install_git("https://github.com/jcheng5/googleCharts.git") 
-library(googleCharts)
-library(shinythemes)
+# library(googleCharts)
+# library(shinythemes)
 # Use global max/min for axes so the view window stays
 # constant as the user moves between years
 xlim <- list(
