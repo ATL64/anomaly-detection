@@ -17,6 +17,7 @@ library(sqldf)
 library(foreach)
 #library(doMCC)
 #registerDoMC(cores=4)
+# devtools::install_git('https://github.com/jcheng5/googleCharts.git',force=TRUE)
 library(randomForest)
 library(lmtest)
 #library(rJava",,"http://rforge.net/",type="source)
@@ -64,7 +65,7 @@ factor_names<-names(db_data)[db_factors]
 db_data$partition<-apply(db_data[,db_factors],1,paste,collapse='|')
 db_data[,db_factors]<-NULL
 db_data$partition<-as.factor(db_data$partition)
-db_num<-which(lapply(db_data,class) %in% ('numeric')  )
+db_num<-which(lapply(db_data,class) %in% c('numeric','integer'))
 db_factors<-which(lapply(db_data,class) %in% ('factor')& sapply(db_data, function(x) all(is.na(as.Date(as.character(x),format="%Y-%m-%d")))))
 db_date<-which(sapply(db_data, function(x) !all(is.na(as.Date(as.character(x),format="%Y-%m-%d")))))
 
@@ -199,7 +200,15 @@ meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.
 
 
 
+#Re do alert level so that it fits with the charts:
 
+for(i in which(meta_frame$alert_level=='Bad')){
+
+  if(predictions[i,30]<test[i,92]+  (test[i,92])*(meta_frame[i,]$model_mean_error+2*meta_frame[i,]$model_std_dev)&predictions[i,30]>test[i,92]-  (test[i,92])*(meta_frame[i,]$model_mean_error+2*meta_frame[i,]$model_std_dev)
+){
+  meta_frame$alert_level[i]<-'Regular'
+    }
+}
 
 
 
@@ -217,9 +226,9 @@ meta_frame$metric_num<-as.numeric(meta_frame$metric)+rnorm(nrow(meta_frame),0,0.
 #Add to test:
 
 
-numerator<-'costs'
-denominator<-'sales'
-name_of_ratio<-'cost_sale'
+numerator<-'clicks'
+denominator<-'users'
+name_of_ratio<-'clicks_per_user'
 
 test<-rbind(test,MakeRatiosTest(numerator,denominator,test,name_of_ratio)) 
 predictions<-rbind(predictions,MakeRatiosPredictions(numerator,denominator,predictions,name_of_ratio,test)) 

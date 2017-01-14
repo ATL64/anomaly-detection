@@ -1,20 +1,15 @@
-load('exampleSpace.RData')
-library(dplyr)
-library(plotly)
-library(ggplot2)
-library(googleCharts)
-library(shinythemes)
+
 function(input, output, session) {
   
   output$plotos <-
     renderPlotly({
       
-      
+      pdf(NULL)
       df<-as.data.frame(rbind(
         original=test[which(test$metric==input$metric&test$partition==input$partition),63:92],
         
         under=predictions[which(test$metric==input$metric&test$partition==input$partition),]-
-          (test[which(test$metric==input$metric&test$partition==input$partition),][63:92])*(
+          (test[which(test$metric==input$metric&test$partition==input$partition),63:92])*(
             meta_frame[which(meta_frame$metric==input$metric&meta_frame$partition==input$partition),]$model_mean_error+
               2*meta_frame[which(meta_frame$metric==input$metric&meta_frame$partition==input$partition),]$model_std_dev)
         ,
